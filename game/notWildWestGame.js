@@ -166,7 +166,7 @@ function clamp(value, min, max){
 			}
 			hasFixedParallax = true;
 		}
-		isAbleToParallax = false; 
+		isAbleToParallax = false;
 		return min;
 	}
     else if(value > max) {
@@ -179,7 +179,7 @@ function clamp(value, min, max){
 			}
 			hasFixedParallax = true;
 		}
-		isAbleToParallax = false; 
+		isAbleToParallax = false;
 		return max;
 	}
 	hasFixedParallax = false;
@@ -191,12 +191,12 @@ function draw() {
 	ctx.setTransform(1,0,0,1,0,0);//reset the transform matrix as it is cumulative
     ctx.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 
-    //Clamp the camera position to the world bounds while centering the camera around the player                                             
+    //Clamp the camera position to the world bounds while centering the camera around the player
     camY = clamp(-player.y + canvas.height/2, myWorld.minY, myWorld.maxY - canvas.height);
 	camX = clamp(-player.x + canvas.width/2, myWorld.minX, myWorld.maxX - canvas.width);
 
    ctx.translate( camX, camY );
-	
+
 	//clear();
 	background();
 	gui();
@@ -508,7 +508,7 @@ function wireMath(pylonX, pylonY, endX, endY) {
 	ctx.strokeStyle = "#505050";
 	ctx.lineWidth = "2";
 	//moveTo - left start position
-	ctx.moveTo(pylonX, pylonY); /**END**/
+	ctx.moveTo(pylonX, pylonY); //leftoff
 	//curveto - first pair is curve control point | second pair is last point
 	ctx.quadraticCurveTo((pylonX + endX)/2, groundLevel - sag, endX, endY);
 	ctx.stroke();
@@ -531,7 +531,7 @@ function sign(myX, myY, amt, givenFunc) {
 function drawStars(givenSign, offsetX, offsetY) {
 	var signOffX = givenSign.signOffsetX + offsetX;
 	//change to + for stars hover with coin -------V
-	var signOffY = givenSign.signOffsetY + offsetY - givenSign.coinY;
+	var signOffY = givenSign.y + offsetY - givenSign.coinY;
 	switch(givenSign.stars) {
 		case 0:
 			break;
