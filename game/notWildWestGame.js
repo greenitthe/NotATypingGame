@@ -1,69 +1,18 @@
 /***********************************
 
-************************************
-***** Let's Make a Typing Game *****
-************************************
+██╗     ███████╗████████╗███████╗                    ███╗   ███╗ █████╗ ██╗  ██╗███████╗                         █████╗
+██║     ██╔════╝╚══██╔══╝██╔════╝                    ████╗ ████║██╔══██╗██║ ██╔╝██╔════╝                        ██╔══██╗
+██║     █████╗     ██║   ███████╗                    ██╔████╔██║███████║█████╔╝ █████╗                          ███████║
+██║     ██╔══╝     ██║   ╚════██║                    ██║╚██╔╝██║██╔══██║██╔═██╗ ██╔══╝                          ██╔══██║
+███████╗███████╗   ██║   ███████║                    ██║ ╚═╝ ██║██║  ██║██║  ██╗███████╗                        ██║  ██║
+╚══════╝╚══════╝   ╚═╝   ╚══════╝                    ╚═╝     ╚═╝╚═╝  ╚═╝╚═╝  ╚═╝╚══════╝                        ╚═╝  ╚═╝
 
-VERSION:
-[major].[minor].[bugfix]
-0.2.1
-
-CHANGELOG:
-[pre 0.1.0]
-Added character
-Added ground
-Added clouds
-Added sky
-Added dinero
-Buffed dinero to mas dinero
-Buffed dinero to mucho mas dinero
-Added unit conversion up to 100B
-Added furnace T1
-Added clouds from furnace
-Added for sale signs
-Added cactus farm T1, T2, furnace T2
-Added floating coin and cost
-Added functionality to signs
-Reworked costs and added profits
-Animated character
-
-[0.1.0]
-Added CHANGELOG
-Added VERSION
-Added TODO
-Added Generator (T1 look, stars)
-Added stars
-Started cost rebalance
-
-[0.2.0]
-Changed jump to move background instead of character
-Attempted to add fences
-
-[0.2.1]
-Fixed issue with coin hovering off the screen
-Fixed issue with parallax hiding when groundOffset is changed
-<!>Fixed fences
-
-TODO:
-FIX FENCES
-Make jump move the background instead of the character
-Make vertical parallax for jump and whatnot
-Electrical Poles from Generator
-Add quarry with explorable tunnels with bonus loot
-Add showdown (animate)
-Come up with other new building ideas
-Rebalance cost/profit
-Rework Cactus Farm {
-	Place cacti along the background scenery, upgrade amounts as cactus farm upgrades
-	Make the cactus farm actually grow cacti instead of depending on a timer to give
-		Therein make a coin appear and float up and disappear when a cactus finishes
-	Make size of growable cactus change based on farm level
-	Extend width of cactus farmland in foreground
-}
-Help Texts Ingame
-Port clickable UPGRADES from the other version
-Add lights to the power lines
-Add more to TODO
+████████╗██╗   ██╗██████╗ ██╗███╗   ██╗ ██████╗                      ██████╗  █████╗ ███╗   ███╗███████╗
+╚══██╔══╝╚██╗ ██╔╝██╔══██╗██║████╗  ██║██╔════╝                     ██╔════╝ ██╔══██╗████╗ ████║██╔════╝
+   ██║    ╚████╔╝ ██████╔╝██║██╔██╗ ██║██║  ███╗                    ██║  ███╗███████║██╔████╔██║█████╗
+   ██║     ╚██╔╝  ██╔═══╝ ██║██║╚██╗██║██║   ██║                    ██║   ██║██╔══██║██║╚██╔╝██║██╔══╝
+   ██║      ██║   ██║     ██║██║ ╚████║╚██████╔╝                    ╚██████╔╝██║  ██║██║ ╚═╝ ██║███████╗
+   ╚═╝      ╚═╝   ╚═╝     ╚═╝╚═╝  ╚═══╝ ╚═════╝                      ╚═════╝ ╚═╝  ╚═╝╚═╝     ╚═╝╚══════╝
 
 ***********************************/
 
@@ -96,6 +45,8 @@ var star = new Image();
 //props
 var fenceProp = new Image();
 var pylonProp = new Image();
+var pylonArray = [];
+var orderedPylonArray = [];
 /**-----------------------------------
 		Balance Controls
 -----------------------------------**/
@@ -119,7 +70,6 @@ var cactusFarmLevel = 0;
 var cactusFarmImage = new Image();
 var cactusFarmSign = new sign(20, groundLevel, cactusFarmCostControls[cactusFarmLevel], "cactusFarm");
 //generator
-var pylonArray = [];
 var generatorLevel = 0;
 var generatorState = 10;
 var generatorImage = new Image();
@@ -425,7 +375,8 @@ function furnaceLevelUp() {
 			furnaceSign.x + 64;
 			furnaceImage.src = "game/textures/ovenT1.png";
 			furnaceCloud = new cloud(furnaceSign.signOffsetX + 96, furnaceSign.signOffsetY + 4, 1, 10, 3);
-			pylonArray.push(new powerPylon(470, groundLevel - 128, 120, 135, groundLevel + 44, groundLevel + 54));
+			pylonArray.push(new powerPylon(470, groundLevel - 128, 610, 635, groundLevel + 44, groundLevel + 54));
+			orderPylonArray();
 			break;
 		case 2:
 			furnaceSign.signOffsetX = furnaceSign.x;
@@ -449,6 +400,7 @@ function generatorLevelUp() {
 			generatorSign.x += 64;
 			generatorSign.coinX = generatorSign.x;
 			pylonArray.push(new powerPylon(904, groundLevel - 128, generatorSign.signOffsetX - 32, generatorSign.signOffsetX - 32, generatorSign.signOffsetY + 20, generatorSign.signOffsetY + 12));
+			orderPylonArray();
 			break;
 		case 2:
 			generatorSign.stars++;
@@ -478,12 +430,14 @@ function cactusFarmLevelUp() {
 			cactusFarmSign.x += 128;
 			cactusFarmSign.coinX = cactusFarmSign.x;
 			pylonArray.push(new powerPylon(260, groundLevel - 128, 120, 135, groundLevel + 44, groundLevel + 54));
+			orderPylonArray();
 			break;
 		case 2:
 			cactusFarmImage.src = "game/textures/cactusFarmT2.png";
 			cactusFarmSign.signOffsetX = cactusFarmSign.x;
 			cactusFarmSign.x += 128;
-			pylonArray[cactusFarmSign.pylonIndex] = (new powerPylon(260, groundLevel - 128, 187, 190, groundLevel - 102, groundLevel - 102));
+			pylonArray[0] = (new powerPylon(260, groundLevel - 128, 187, 190, groundLevel - 102, groundLevel - 102));
+			orderPylonArray();
 			break;
 		default:
 			cactusFarmImage.src = "game/textures/cactusFarmT1.png";
@@ -499,99 +453,70 @@ function handlePylonsWireMathHelper(ii, isLast) {
 		//-------
 		//2 3 | 4 5
 		//wire 0
-		wireMath(pylonArray[ii].w0x, pylonArray[ii].w0y, pylonArray[ii + 1].w0x, pylonArray[ii + 1].w0y);
+		wireMath(orderedPylonArray[ii].w0x, orderedPylonArray[ii].w0y, orderedPylonArray[ii + 1].w0x, orderedPylonArray[ii + 1].w0y);
 		//wire 1
-		wireMath(pylonArray[ii].w1x, pylonArray[ii].w1y, pylonArray[ii + 1].w1x, pylonArray[ii + 1].w1y);
+		wireMath(orderedPylonArray[ii].w1x, orderedPylonArray[ii].w1y, orderedPylonArray[ii + 1].w1x, orderedPylonArray[ii + 1].w1y);
 		//wire 2
-		wireMath(pylonArray[ii].w2x, pylonArray[ii].w2y, pylonArray[ii + 1].w2x, pylonArray[ii + 1].w2y);
+		wireMath(orderedPylonArray[ii].w2x, orderedPylonArray[ii].w2y, orderedPylonArray[ii + 1].w2x, orderedPylonArray[ii + 1].w2y);
 		//wire 3
-		wireMath(pylonArray[ii].w3x, pylonArray[ii].w3y, pylonArray[ii + 1].w3x, pylonArray[ii + 1].w3y);
+		wireMath(orderedPylonArray[ii].w3x, orderedPylonArray[ii].w3y, orderedPylonArray[ii + 1].w3x, orderedPylonArray[ii + 1].w3y);
 		//wire 4
-		wireMath(pylonArray[ii].w4x, pylonArray[ii].w4y, pylonArray[ii + 1].w4x, pylonArray[ii + 1].w4y);
+		wireMath(orderedPylonArray[ii].w4x, orderedPylonArray[ii].w4y, orderedPylonArray[ii + 1].w4x, orderedPylonArray[ii + 1].w4y);
 		//wire 5
-		wireMath(pylonArray[ii].w5x, pylonArray[ii].w5y, pylonArray[ii + 1].w5x, pylonArray[ii + 1].w5y);
+		wireMath(orderedPylonArray[ii].w5x, orderedPylonArray[ii].w5y, orderedPylonArray[ii + 1].w5x, orderedPylonArray[ii + 1].w5y);
 	}
 }
 
 function pylonEvenOddHelper(ii, isLast) {
 	if ((ii % 2) == 0) {
-		ctx.drawImage(pylonProp, pylonArray[ii].x, pylonArray[ii].y, 64, 192);
+		ctx.drawImage(pylonProp, orderedPylonArray[ii].x, orderedPylonArray[ii].y, 64, 192);
 		handlePylonsWireMathHelper(ii, isLast);
 	}
 	else {
 		handlePylonsWireMathHelper(ii, isLast);
-		ctx.drawImage(pylonProp, pylonArray[ii].x, pylonArray[ii].y, 64, 192);
+		ctx.drawImage(pylonProp, orderedPylonArray[ii].x, orderedPylonArray[ii].y, 64, 192);
 	}
+}
+
+function orderPylonArray() {
+	orderedPylonArray = [];
+	while (pylonArray.length > 0) {
+		var leastX = Infinity;
+		var leastXIndex;
+		for (var ii = 0; ii < pylonArray.length; ii++) {
+			if (pylonArray[ii].x < leastX) {
+				leastXIndex = ii;
+				leastX = pylonArray[ii].x
+			}
+		}
+		orderedPylonArray.push(pylonArray[leastXIndex]);
+		pylonArray.splice(leastXIndex, 1);
+	}
+	pylonArray = orderedPylonArray;
 }
 
 function handlePylons() {
 	/**
 		Handles pylon weirdery:
 	**/
-	var orderedPylonArray = [];
-	for (var ii; ii < pylonArray.length; ii = orderedPylonArray.length) {
-		var leastX = infinity;
-		var leastXIndex;
-		for (var i; i < pylonArray.length; ii++) {
-			if (pylonArray[i].x < leastX) {
-				leastXIndex = i;
-				leastX = pylonArray[i].x
-			}
-		}
-		orderedPylonArray.push(pylonArray[leastXIndex]);
-		pylonArray.splice(leastXIndex, 1);
-	}
 	//As long as generator above:
-	for (var ii = 0; ii < pylonArray.length; ii++) {
+	for (var ii = 0; ii < orderedPylonArray.length; ii++) {
 		if (generatorLevel) {
-			if (pylonArray.length > 1) {
-				if (ii == pylonArray.length - 1) {
+			if (orderedPylonArray.length > 1) {
+				if (ii == orderedPylonArray.length - 1) {
 					/**skip to wiremath**/
 					pylonEvenOddHelper(ii, true);
-					wireMath(pylonArray[ii].w2x, pylonArray[ii].w2y, pylonArray[ii].wEndX2, pylonArray[ii].wEndY2);
-					wireMath(pylonArray[ii].w5x, pylonArray[ii].w5y, pylonArray[ii].wEndX5, pylonArray[ii].wEndY5);
+					wireMath(orderedPylonArray[ii].w2x, orderedPylonArray[ii].w2y, orderedPylonArray[ii].wEndX2, orderedPylonArray[ii].wEndY2);
+					wireMath(orderedPylonArray[ii].w5x, orderedPylonArray[ii].w5y, orderedPylonArray[ii].wEndX5, orderedPylonArray[ii].wEndY5);
 				}
 				else {
-					wireMath(pylonArray[ii].w2x, pylonArray[ii].w2y, pylonArray[ii].wEndX2, pylonArray[ii].wEndY2);
-					wireMath(pylonArray[ii].w5x, pylonArray[ii].w5y, pylonArray[ii].wEndX5, pylonArray[ii].wEndY5);
+					wireMath(orderedPylonArray[ii].w2x, orderedPylonArray[ii].w2y, orderedPylonArray[ii].wEndX2, orderedPylonArray[ii].wEndY2);
+					wireMath(orderedPylonArray[ii].w5x, orderedPylonArray[ii].w5y, orderedPylonArray[ii].wEndX5, orderedPylonArray[ii].wEndY5);
 					//example of how to optimize the rest of it perhaps
 					//performance - only render what is visible
-					if ((pylonArray[ii].w5x + 914 > -camX) || (pylonArray[ii + 1].w5x + 914 > -camX)) {
-						//evens make the wires alternate sides
+					if ((orderedPylonArray[ii].w5x + 914 > -camX) || (orderedPylonArray[ii + 1].w5x + 914 > -camX)) {
+						//make the wires alternate sides
 						pylonEvenOddHelper(ii, false);
-						/**
-						//furnace
-						if (furnaceLevel > 0 || cactusFarmLevel > 0) {
-							//changed size here - propogate to .net
-							ctx.drawImage(pylonProp, pylonArray[ii].x, pylonArray[ii].y, 64, 192);
-							//  0 |  1
-							//-------
-							//2 3 | 4 5
-							//wire 0
-							wireMath(generatorSign.x - 160, groundLevel - 107, furnaceSign.x + 17, groundLevel - 108);
-							//wire 1
-							wireMath(generatorSign.x - 140, groundLevel - 107, furnaceSign.x + 41, groundLevel - 108);
-							//wire 2
-							wireMath(generatorSign.x - 174, groundLevel - 90, furnaceSign.x + 5, groundLevel - 90);
-							//wire 3
-							wireMath(generatorSign.x - 160, groundLevel - 90, furnaceSign.x + 17, groundLevel - 90);
-							//wire 4
-							wireMath(generatorSign.x - 140, groundLevel - 88, furnaceSign.x + 41, groundLevel - 90);
-							//wire 5
-							wireMath(generatorSign.x - 126, groundLevel - 88, furnaceSign.x + 53, groundLevel - 90);
-							ctx.drawImage(pylonProp, furnaceSign.x, groundLevel - 128, 64, 192);
-
-							//now for only when cactus farm is the one leveled up
-							if (cactusFarmLevel > 0) {
-								ctx.drawImage(pylonProp, cactusFarmSign.x, groundLevel - 128, 64, 192);
-							}
-							//now for only when furnace is the one leveled up
-							if (furnaceLevel > 0) {
-								wireMath(furnaceSign.x + 5, groundLevel - 90, furnaceSign.x + 95, groundLevel + 36);
-								wireMath(furnaceSign.x + 53, groundLevel - 90, furnaceSign.x + 120, groundLevel + 36);
-							}
-						}
-						**/
 					}
 				}
 			}
