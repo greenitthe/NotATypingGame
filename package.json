@@ -1,0 +1,19 @@
+{
+  "name": "notatypinggame",
+  "version": "0.0.1",
+  "private": "true",
+  "description": "That thing I said about it",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "greenitthe <greenitthe@gmail.com>",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.13.4",
+    "js-cookie": "^2.1.0"
+  },
+  "devDependencies": {
+    "standard": "^5.4.1"
+  }
+}

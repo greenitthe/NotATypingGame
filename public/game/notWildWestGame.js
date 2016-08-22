@@ -47,6 +47,8 @@ var fenceProp = new Image();
 var pylonProp = new Image();
 var pylonArray = [];
 var orderedPylonArray = [];
+//savenum
+var saveSkipper = 0;
 /**-----------------------------------
 		Balance Controls
 -----------------------------------**/
@@ -104,6 +106,8 @@ function init() {
 	}
 	characterImage = player.stepRight;
 	parallax();
+	load();
+	draw();
 }
 
 function clamp(value, min, max){
@@ -138,15 +142,40 @@ function clamp(value, min, max){
     return value;
 }
 
+function load() {
+	if (Cookies.get().length > 0) {
+		player = Cookies.get('player');
+		orderedPylonArray = Cookies.get('pylons');
+		furnaceLevel = Cookies.get('furnaceLevel');
+		furnaceSign = Cookies.get('furnaceSign');
+	}
+
+	//ERROR: LOADING AS STRINGS INSTEAD OF AS IT SHOULD BE - Can convert numbers fine - go through and manually select player values you baka
+}
+
+function save() {
+	if (saveSkipper >= 10) {
+		saveSkipper = 0;
+		Cookies.set('player', player);
+		Cookies.set('pylons', orderedPylonArray);
+		Cookies.set('furnaceLevel', furnaceLevel);
+		Cookies.set('furnaceSign', furnaceSign);
+	}
+	else {
+		saveSkipper++;
+	}
+	return(Cookies.get('player').gold);
+}
+
 function draw() {
 	ctx.setTransform(1,0,0,1,0,0);//reset the transform matrix as it is cumulative
-    ctx.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
+  ctx.clearRect(0, 0, canvas.width, canvas.height);//clear the viewport AFTER the matrix is reset
 
-    //Clamp the camera position to the world bounds while centering the camera around the player
-    camY = clamp(-player.y + canvas.height/2, myWorld.minY, myWorld.maxY - canvas.height);
+  //Clamp the camera position to the world bounds while centering the camera around the player
+	camY = clamp(-player.y + canvas.height/2, myWorld.minY, myWorld.maxY - canvas.height);
 	camX = clamp(-player.x + canvas.width/2, myWorld.minX, myWorld.maxX - canvas.width);
 
-   ctx.translate( camX, camY );
+ ctx.translate( camX, camY );
 
 	//clear();
 	background();
@@ -157,6 +186,7 @@ function draw() {
 	drawCharacter();
 	paintBullets();
 	collectIncome();
+	save();
 	requestAnimationFrame(draw);
 }
 
@@ -501,6 +531,45 @@ function handlePylons() {
 	**/
 	//As long as generator above:
 	for (var ii = 0; ii < orderedPylonArray.length; ii++) {
+		//update the locations for both the pylons and wires
+		orderedPylonArray[ii].y = groundLevel - 128;
+
+/***************************************************
+
+
+
+
+
+
+
+
+
+
+Put orderedpylonArray.wEndYs relative to .ys
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+*********************************/
+		orderedPylonArray[ii].updateWires(orderedPylonArray[ii].x, orderedPylonArray[ii].y, orderedPylonArray[ii].wEndY2 + orderedPylonArray[ii].y, orderedPylonArray[ii].wEndY5 + orderedPylonArray[ii].y);
 		if (generatorLevel) {
 			if (orderedPylonArray.length > 1) {
 				if (ii == orderedPylonArray.length - 1) {
@@ -555,7 +624,6 @@ function powerPylon(startX, startY, endX2, endX5, endY2, endY5) {
 	this.w5x = startX + 56;
 	this.w5y = startY + 38;
 
-
 	//ends of the wiremath
 	if (typeof endX2 == 'undefined') {}
 	else {this.wEndX2 = endX2;}
@@ -566,6 +634,41 @@ function powerPylon(startX, startY, endX2, endX5, endY2, endY5) {
 	else {this.wEndX5 = endX5;}
 	if (typeof endY5 == 'undefined') {}
 	else {this.wEndY5 = endY5;}
+}
+
+powerPylon.prototype.updateWires = function(newX, newY, newEndY2, newEndY5) {
+	//  0 |  1
+	//-------
+	//2 3 | 4 5
+
+	//wire 0
+	this.w0x = newX + 20;
+	this.w0y = newY + 18;
+
+	//wire 1
+	this.w1x = newX + 44;
+	this.w1y = newY + 18;
+
+	//wire 2
+	this.w2x = newX + 8;
+	this.w2y = newY + 38;
+
+	//wire 3
+	this.w3x = newX + 20;
+	this.w3y = newY + 38;
+
+	//wire 4
+	this.w4x = newX + 44;
+	this.w4y = newY + 38;
+
+	//wire 5
+	this.w5x = newX + 56;
+	this.w5y = newY + 38;
+
+
+	//ends of the wiremath
+	this.wEndY2 = newEndY2;
+	this.wEndY5 = newEndY5;
 }
 
 function wireMath(pylonX, pylonY, endX, endY) {
@@ -820,6 +923,9 @@ $(document).keydown( function(e)
 	if (e.which == 16) {
 		player.speed = charSpeed * 2;
 	}
+	if (e.which == 9) {
+		Cookies.remove();
+	}
 });
 
 $(document).keypress( function(e)
@@ -906,5 +1012,6 @@ g8.src = "game/textures/generatorT1_phase8.png";
 fenceProp.src = "game/textures/fence.png";
 pylonProp.src = "game/textures/pylon_T1.png";
 
-init();
-draw();
+jQuery(document).ready(function($) {
+	init();
+});
